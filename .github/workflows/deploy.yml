@@ -51,4 +51,7 @@ jobs:
           script_stop: true
           script: |
             pkill -f app.jar || true
-            nohup java -jar /home/ubuntu/app/app.jar > /home/ubuntu/app/app.log 2>&1 & disown
+            sleep 2
+            setsid java -jar /home/ubuntu/app/app.jar > /home/ubuntu/app/app.log 2>&1 </dev/null &
+            sleep 3
+            pgrep -f app.jar && echo "App started OK" || echo "App FAILED to start"
