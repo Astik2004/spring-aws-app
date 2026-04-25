@@ -25,18 +25,19 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests
 
-      # 4. Ensure EC2 folder exists + clean old jar
-      - name: Prepare EC2 directory
+      # 4. Ensure EC2 folder clean
+      - name: Prepare EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: false
           script: |
             mkdir -p /home/ubuntu/app
-            rm -f /home/ubuntu/app/app.jar || true
+            rm -rf /home/ubuntu/app/*
 
-      # 5. Copy JAR to EC2
+      # 5. Copy JAR to EC2 (IMPORTANT: target folder usage)
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -44,9 +45,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "target/app.jar"
-          target: "/home/ubuntu/app/"
+          target: "/home/ubuntu/app/target/"
 
-      # 6. Deploy & Restart App
+      # 6. Restart Application (RUN FROM TARGET)
       - name: Restart App on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -56,9 +57,9 @@ jobs:
           script_stop: false
           script: |
             echo "Stopping old application..."
-            pkill -f app.jar || echo "No running process found"
+            pkill -f app.jar || true
 
             echo "Starting new application..."
-            nohup java -jar /home/ubuntu/app/app.jar > /home/ubuntu/app.log 2>&1 & disown
+            nohup java -jar /home/ubuntu/app/target/app.jar > /home/ubuntu/app/app.log 2>&1 & disown
 
-            echo "Deployment successful 🚀"
+            echo "Deployment SUCCESS 🚀"
