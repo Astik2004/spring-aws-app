@@ -29,6 +29,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
+            sudo systemctl stop springapp || true
             mkdir -p /home/ubuntu/app
             rm -rf /home/ubuntu/app/*
 
@@ -50,8 +51,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            pkill -f app.jar || true
-            sleep 2
-            setsid java -jar /home/ubuntu/app/app.jar > /home/ubuntu/app/app.log 2>&1 </dev/null &
+            sudo systemctl start springapp
             sleep 3
-            pgrep -f app.jar && echo "App started OK" || echo "App FAILED to start"
+            sudo systemctl is-active springapp && echo "App started OK" || echo "App FAILED to start"
