@@ -45,7 +45,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "target/app.jar"
-          target: "/home/ubuntu/app/target/"
+          target: "/home/ubuntu/app/"
 
       # 6. Restart Application (RUN FROM TARGET)
       - name: Restart App on EC2
